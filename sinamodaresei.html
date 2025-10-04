@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بهینه‌سازی انرژی در مراکز داده</title>
+    <style>
+        /* General Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+            font-size: 15px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px 20px 80px 20px;
+        }
+
+        /* --- Global Sidebar Navigation (The full menu) --- */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1002;
+            top: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.98);
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px;
+            white-space: nowrap;
+        }
+
+        .sidebar.open {
+            width: 300px;
+            padding: 20px 10px;
+        }
+        
+        .close-btn-sidebar {
+            position: absolute;
+            top: 10px;
+            left: 25px;
+            font-size: 36px;
+            margin-right: 50px;
+            color: #764ba2;
+            cursor: pointer;
+        }
+
+        .sidebar .nav-btn {
+            font-size: 1em;
+            padding: 12px 15px;
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-align: right;
+            margin-bottom: 5px;
+        }
+        
+        /* Stylish & Cheerful Menu Button Colors */
+        .nav-btn.main { background: #1565c0; color: white; border-bottom: 3px solid #0d47a1; }
+        .nav-btn.challenge { background: #ff7043; color: white; border-left: 5px solid #e64a19; }
+        .nav-btn.solution { background: #388e3c; color: white; border-left: 5px solid #1b5e20; }
+        .nav-btn.summary { background: #7b1fa2; color: white; border-left: 5px solid #4a148c; margin-top: 15px; }
+        .nav-btn.contact { background: #c51162; color: white; border-left: 5px solid #880e4f; margin-top: 5px; } /* Contact color changed slightly to separate from summary */
+
+        /* --- Floating Bottom Navigation --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            padding: 0 40px; 
+        }
+
+        .bottom-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        /* --- Slide and Background Styles (Subtle BG) --- */
+        .slide {
+            min-height: 100vh;
+            display: none;
+            padding: 60px 20px;
+            animation: fadeIn 0.6s ease-in-out;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .slide::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://via.placeholder.com/1500x1000/eeeeee/333333?text=Tech+Pattern'); 
+            background-size: cover;
+            opacity: 0.05;
+            z-index: 1;
+        }
+
+        /* Override for specific slides (more relevant images) */
+        #slide0::before { background-image: url('https://via.placeholder.com/1500x1000/0a0a0a/FFFFFF?text=Data+Center+Main'); opacity: 0.05; }
+        #slide2::before { background-image: url('https://via.placeholder.com/1500x1000/800000/FFFFFF?text=Hot+Air+Mixing'); opacity: 0.07; }
+        #slide3::before { background-image: url('https://via.placeholder.com/1500x1000/004080/FFFFFF?text=Aisle+Containment'); opacity: 0.07; }
+        #slide5::before { background-image: url('https://via.placeholder.com/1500x1000/8b0000/FFFFFF?text=Compressor+Overwork'); opacity: 0.07; }
+        #slide6::before { background-image: url('https://via.placeholder.com/1500x1000/388e3c/FFFFFF?text=Free+Cooling'); opacity: 0.1; }
+        #slide7::before { background-image: url('https://via.placeholder.com/1500x1000/ff9800/FFFFFF?text=Blind+Monitoring'); opacity: 0.07; }
+        #slide8::before { background-image: url('https://via.placeholder.com/1500x1000/764ba2/FFFFFF?text=AI+Control+Panel'); opacity: 0.07; }
+        #slide9::before { background-image: url('https://via.placeholder.com/1500x1000/004d40/FFFFFF?text=Summary'); opacity: 0.1; } /* New Summary Slide BG */
+
+
+        .slide.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            line-height: 1.8;
+            text-align: justify;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- Font and Title Balancing --- */
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #4a548d;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 8px;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 1.4em;
+            color: #764ba2;
+            margin: 15px 0 8px 0;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 18px;
+            border-right: 5px solid #2196f3; 
+            margin: 15px 0;
+            line-height: 1.7;
+            font-size: 1em;
+        }
+
+        .detail-section {
+            background: #f4f7f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border-left: 5px solid #667eea;
+            line-height: 1.7;
+            font-size: 1em;
+        }
+
+        .detail-section ul {
+            padding-right: 20px;
+            margin-top: 10px;
+            list-style: square;
+        }
+        
+        .timeline-box { /* New Box Style for step-by-step or technical details */
+            background: #e0f2f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-right: 5px solid #009688;
+            line-height: 1.7;
+            font-size: 1em;
+        }
+        
+        .case-study {
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffcc80;
+            margin-top: 20px;
+            line-height: 1.6;
+            font-size: 1em;
+            color: #5d4037;
+        }
+        
+        .risk-assessment { /* New Box Style for highlighting risks */
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #f44336;
+            margin-top: 20px;
+            line-height: 1.6;
+            font-size: 1em;
+            color: #b71c1c;
+        }
+
+        /* Image Placeholder Styling */
+        .content-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 15px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+        
+        /* Apply Justify to paragraph-level elements for neatness (No empty lines between paragraphs) */
+        .info-box p, .detail-section p, .timeline-box p, .card > p, .case-study p, .risk-assessment p {
+            text-align: justify;
+            text-justify: inter-word;
+            margin-bottom: 8px;
+        }
+        .info-box p:last-child, .detail-section p:last-child, .timeline-box p:last-child, .card > p:last-child, .case-study p:last-child, .risk-assessment p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- Specific Contact Slide Styling (Index 10) --- */
+        #slide10 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+            background: linear-gradient(45deg, #a1c4fd 0%, #c2e9fb 100%);
+        }
+        
+        #contact-card {
+            text-align: center;
+            max-width: 500px;
+            padding: 50px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        #contact-card h3 {
+            font-size: 1.8em;
+            color: #4a548d;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+
+        #contact-card .contact-detail {
+            font-size: 1.2em;
+            margin-top: 25px;
+            line-height: 1.5;
+        }
+
+        #contact-card .phone {
+            font-size: 2.5em;
+            color: #4caf50;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        /* --- Summary Slide (Index 9) Styling --- */
+        #slide9 h2 {
+            border-bottom: 3px solid #009688;
+            color: #004d40;
+        }
+        
+        .summary-point {
+            background: #e0f7fa;
+            border-left: 8px solid #00bcd4;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            line-height: 1.7;
+        }
+        
+        .summary-point strong {
+            color: #00838f;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px 10px 70px 10px;
+            }
+            .sidebar.open {
+                width: 250px;
+            }
+            .bottom-nav {
+                padding: 0 20px;
+                height: 50px;
+            }
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.5em; }
+            h3 { font-size: 1.2em; }
+            .info-box, .detail-section, .case-study, .card p, .timeline-box, .risk-assessment, .summary-point {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn-sidebar" onclick="closeNav()">&times;</a>
+        
+        <button class="nav-btn main" onclick="changeSlide(0); closeNav();">🏠 صفحه اصلی</button>
+        <button class="nav-btn main" onclick="changeSlide(1); closeNav();">📊 مقدمه: ضرورت بهینه‌سازی</button>
+        
+        <button class="nav-btn challenge" onclick="changeSlide(2); closeNav();">⚡ چالش ۱: ترکیب هوا</button>
+        <button class="nav-btn solution" onclick="changeSlide(3); closeNav();">💡 راهکار ۱: محصورسازی راهرو</button>
+        <button class="nav-btn solution" onclick="changeSlide(4); closeNav();">♻️ راهکار ۱.۵: بازیافت گرما</button>
+        
+        <button class="nav-btn challenge" onclick="changeSlide(5); closeNav();">📉 چالش ۲: کمپرسورها</button>
+        <button class="nav-btn solution" onclick="changeSlide(6); closeNav();">📈 راهکار ۲: سرمایش طبیعی</button>
+        
+        <button class="nav-btn challenge" onclick="changeSlide(7); closeNav();">💻 چالش ۳: پایش کورکورانه</button>
+        <button class="nav-btn solution" onclick="changeSlide(8); closeNav();">🧠 راهکار ۳: کنترل هوشمند</button>
+        
+        <button class="nav-btn summary" onclick="changeSlide(9); closeNav();">✅ جمع‌بندی نهایی و نقشه راه</button>
+        
+        <button class="nav-btn contact" onclick="changeSlide(10); closeNav();">📞 اطلاعات تماس</button>
+    </div>
+
+    <div class="container">
+        <div class="slide active" id="slide0">
+            <h1>طرح جامع بهینه‌سازی انرژی در مراکز داده</h1>
+            <p style="text-align: center; color: white; font-size: 1.5em; margin-top: -15px; margin-bottom: 20px; position: relative; z-index: 2;">
+                راهکارهای فنی کم‌هزینه برای افزایش پایداری و کاهش مصرف
+            </p>
+            
+            <div class="card">
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 4em; margin-bottom: 15px; color: #667eea;">🏢</div>
+                    <h2 style="border: none; text-align: center; color: #764ba2;">ارائه به مدیریت محترم</h2>
+                    <p style="font-size: 1.1em; line-height: 1.8; color: #555; margin-top: 20px; text-align: justify;">
+                        این پرزنتیشن با هدف ارائه یک نقشه راه عملیاتی و اقتصادی تدوین شده است. اجرای این طرح، علاوه بر **کاهش چشمگیر هزینه‌های جاری (OPEX)**، به افزایش پایداری و مطابقت مرکز داده با استانداردهای جهانی (مانند PUE زیر ۱.۵) کمک شایانی خواهد کرد و مسیر توسعه پایدار زیرساخت را هموار می‌سازد. تمامی راهکارهای ارائه شده دارای توجیه اقتصادی قوی و **بازگشت سرمایه (ROI) سریع** هستند.
+                    </p>
+                    <div style="margin-top: 30px; font-size: 1.2em; color: #667eea; text-align: right;">
+                        <p>👤 ارائه دهنده: <strong style="color: #4a548d;">سینا مدرسی</strong></p>
+                        <p style="font-size: 1em; margin-top: 5px;">
+                            **دکتری مهندسی نرم‌افزار**
+                        </p>
+                        <p style="font-size: 1em; color: #555; margin-top: 5px;">
+                            کارشناس دیتا و سویچ
+                        </p>
+                        <p style="margin-top: 15px;">🎯 هدف: کاهش **۱۵٪ تا ۲۵٪** در مصرف کل انرژی تأسیسات از طریق اجرای راهکارهای عملیاتی.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide1">
+            <div class="card">
+                <h2>📊 مقدمه: ضرورت فنی و اقتصادی بهینه‌سازی در مراکز داده</h2>
+                <div class="info-box">
+                    <h3 style="color: #c62828; margin-top: 0;">۱. چالش انرژی: فراتر از یک هزینه، یک تهدید عملیاتی</h3>
+                    <p>
+                        مراکز داده به‌عنوان ستون فقرات اقتصاد دیجیتال، نیازمند تأمین پایداری ۲۴ ساعته هستند. اما با افزایش چگالی تجهیزات IT (High-Density Computing)، مصرف انرژی آن‌ها به یک **چالش عملیاتی و استراتژیک** تبدیل شده است. برخلاف تصور رایج، مصرف انرژی فقط شامل برق تجهیزات نیست، بلکه هزینه سنگین **خنک‌سازی** برای دفع گرمای تولید شده را نیز در بر می‌گیرد. در یک دیتاسنتر غیر بهینه، بیش از ۵۰ درصد برق مصرفی کل سایت صرفاً برای خنک‌سازی هدر می‌رود.
+                    </p>
+                    <p>
+                        **ریسک پایداری:** عدم بهینه‌سازی، نه تنها هزینه‌ها را افزایش می‌دهد، بلکه با ایجاد «نقاط داغ» و تحمیل بار اضافی بر سیستم‌های تهویه، **ریسک از کار افتادن سرویس‌ها (Downtime)** را نیز به شکل تصاعدی بالا می‌برد. این یک معادله ساده است: راندمان پایین = ریسک عملیاتی بالا.
+                    </p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>۲. تحلیل شاخص PUE و توجیه اقتصادی (ROI)</h4>
+                    <p>
+                        **PUE (Power Usage Effectiveness)** نسبت کل توان ورودی به مرکز داده (شامل تهویه، روشنایی، و IT) بر توان مصرفی خالص تجهیزات IT است. یک PUE معمول و ضعیف در مراکز داده سنتی، حدود ۲.۰ است؛ یعنی به ازای هر ۱ وات برق که به سرور می‌رسد، ۱ وات دیگر صرف خنک‌سازی، پمپ، فن و ... می‌شود. هدف این طرح دستیابی به **PUE زیر ۱.۵** است.
+                    </p>
+                    <ul>
+                        <li>**کاهش OPEX:** هر ۰.۱ کاهش در PUE در یک دیتاسنتر ۱ مگاواتی، می‌تواند سالانه ده‌ها هزار دلار صرفه‌جویی در قبض برق به همراه داشته باشد.</li>
+                        <li>**افزایش طول عمر تجهیزات:** با کنترل دقیق‌تر دما و رطوبت، استهلاک تجهیزات کاهش می‌یابد.</li>
+                        <li>**شاخص هدف:** رسیدن به PUE نزدیک به ۱.۳ در فاز نهایی پروژه.</li>
+                    </ul>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x250/4CAF50/FFFFFF?text=Infographic+PUE+vs+Costs+Breakdown" alt="PUE Visual">
+
+                <div class="timeline-box">
+                    <h3>۳. مسیر سه‌گانه برای بهینه‌سازی</h3>
+                    <p>
+                        بهینه‌سازی انرژی یک فرآیند گام به گام است. این طرح بر سه ستون اصلی استوار است که باید به ترتیب اجرا شوند: **الف) مدیریت فیزیکی جریان هوا (Containment)، ب) استفاده حداکثری از Free Cooling (سرمایش طبیعی)، ج) کنترل هوشمند مبتنی بر داده (AI/DCIM).** هر گام، بازدهی گام بعدی را افزایش می‌دهد. برای مثال، محصورسازی، ساعات قابل استفاده از Free Cooling را افزایش می‌دهد.
+                    </p>
+                </div>
+
+                <div class="case-study">
+                    <h3>۴. مطالعه موردی جهانی: تأثیر مالی بهینه‌سازی</h3>
+                    <p>
+                        در یک نمونه موردی در ایالات متحده، دیتاسنتری با اجرای راهکارهای مدیریت هوا و Free Cooling توانست PUE را از ۱.۹ به ۱.۴ کاهش دهد. این کاهش باعث شد که در یک دوره ۵ ساله، سود حاصل از صرفه‌جویی در انرژی معادل **۴۰٪ کل هزینه‌های تجهیزات سرمایشی اولیه** شود. این امر نشان می‌دهد بهینه‌سازی نه یک هزینه، بلکه یک **سرمایه‌گذاری بلندمدت با بازدهی بالا** است.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide2">
+            <div class="card">
+                <h2>⚡ چالش ۱: ترکیب هوای سرد و گرم و اتلاف ظرفیت هواسازها</h2>
+                
+                <div class="info-box" style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); border-right-color: #e91e63;">
+                    <h3 style="color: #880e4f; margin-top: 0;">۱. مشکل ریشه‌ای: پدیده «دور زدن هوا» و اتلاف حرارتی (Thermal Dilution)</h3>
+                    <p>
+                        در طراحی‌های سنتی، هوای سرد تزریق شده به راهروی سرد، قبل از اینکه به طور کامل از تجهیزات IT عبور کند و گرم شود، از طریق روزنه‌ها و فضاهای خالی رک‌ها نشت می‌کند و با هوای گرم برگشتی (Return Air) مخلوط می‌شود. این پدیده را **Bypass Air** یا **Short-Circuiting** می‌نامند.
+                    </p>
+                    <p>
+                        **اتلاف حرارتی:** این ترکیب باعث می‌شود دمای برگشتی به هواسازها پایین بیاید (مثلاً ۲۸ درجه به جای ۳۸ درجه). سیستم تهویه (CRAC/CRAH) بر اساس دمای برگشتی کار می‌کند؛ بنابراین، به اشتباه فکر می‌کند که دیتاسنتر به اندازه کافی سرد است و با راندمان پایین یا با سرعت فن کمتر کار می‌کند. این کارکرد ناصحیح باعث می‌شود که هواساز نتواند ظرفیت کامل خود را به محل‌های واقعی مورد نیاز (نقاط داغ) برساند.
+                    </p>
+                </div>
+
+                <div class="risk-assessment">
+                    <h4>۲. پیامدهای فنی مستقیم: نقاط داغ و کاهش عمر مفید</h4>
+                    <p>
+                        نقاط داغ (Hot Spots) در رک‌هایی که هوای سرد کافی دریافت نمی‌کنند، به وجود می‌آیند. این نقاط معمولاً در بالای رک‌ها یا در رک‌هایی با چگالی بالا تشکیل می‌شوند. دمای بیش از ۲۵ درجه در ورودی سرور، باعث می‌شود که سیستم داخلی سرور برای خنک‌سازی خود، فن‌های داخلی را با سرعت بیشتری به کار اندازد. این کار نه تنها مصرف برق خود سرور را افزایش می‌دهد، بلکه طبق استاندارد ASHRAE، دمای بالا **عمر مفید اجزای حساس (مانند خازن‌ها) را به شکل تصاعدی کاهش می‌دهد.**
+                    </p>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x300/FF5722/FFFFFF?text=Air+Mixing+Diagram+showing+Hot+Spots" alt="Air Mixing Diagram">
+
+                <div class="detail-section">
+                    <h3>۳. آنالیز CFD و هدر رفت ظرفیت</h3>
+                    <p>
+                        شبیه‌سازی‌های دینامیک سیالات محاسباتی (CFD) نشان می‌دهند که در یک دیتاسنتر بدون محصورسازی، ممکن است تا **۴۰ تا ۶۰ درصد** از هوای سرد تولید شده، هرگز به ورودی تجهیزات IT نرسد و صرفاً در محیط هدر رود. این به این معنی است که سیستم سرمایشی با ۶۰٪ ظرفیت خود برای خنک‌سازی هوای هدر رفته کار می‌کند، نه برای خنک‌سازی سرورها.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide3">
+            <div class="card">
+                <h2>💡 راهکار ۱: محصورسازی کامل جریان هوا (Aisle Containment) و مدیریت نشت</h2>
+                
+                <div class="info-box" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-right-color: #4caf50;">
+                    <h3 style="color: #2e7d32; margin-top: 0;">۱. اصل تفکیک: ایجاد دو محیط حرارتی مجزا</h3>
+                    <p>
+                        **محصورسازی (Containment)** به معنای ایجاد یک مانع فیزیکی کامل (سقف‌های شفاف، درب‌ها و پنل‌ها) است که **راهروی سرد** را از **راهروی گرم** جدا می‌کند. با این کار، تضمین می‌شود که هوای سرد ۱۰۰٪ به ورودی سرورها برسد و هوای گرم خروجی نیز ۱۰۰٪ به صورت مستقیم به ورودی هواسازها (Return Air) هدایت شود. با این روش، پدیده **Bypass Air** کاملاً حذف می‌شود.
+                    </p>
+                    <p>
+                        **افزایش دمای Set Point:** نتیجه مستقیم این کار، افزایش دمای برگشتی به هواساز (تا ۳۸ درجه) و حذف نقاط داغ است. با حذف ریسک، می‌توان دمای تنظیم شده (Set Point) هواساز را از ۲۰ درجه به ۲۴ درجه سانتی‌گراد افزایش داد. **افزایش هر ۱ درجه در Set Point، منجر به ۲ تا ۴ درصد صرفه‌جویی در مصرف برق کمپرسور می‌شود.**
+                    </p>
+                </div>
+
+                <div class="timeline-box">
+                    <h4>۲. مراحل اجرای عملی و فنی (بدون توقف سرویس)</h4>
+                    <p>
+                        اجرای این راهکار در سه فاز و بدون نیاز به خاموشی سرویس‌های IT انجام می‌شود:
+                    </p>
+                    <ul>
+                        <li>**فاز الف: مسدودسازی نشت‌ها (Sealing):** نصب **Blanking Panels** در تمامی فضای خالی رک‌ها و مسدودسازی تمامی روزنه‌ها در کف کاذب. این ساده‌ترین و پربازده‌ترین قدم است.</li>
+                        <li>**فاز ب: نصب موانع فیزیکی:** نصب سقف‌های پلی کربناتی یا وینیلی در بالای راهروهای سرد و نصب درب‌های کشویی در ابتدا و انتهای راهرو برای ایجاد تفکیک کامل.</li>
+                        <li>**فاز ج: تنظیم مجدد هواساز:** افزایش تدریجی Set Point دما از ۲۲ درجه به ۲۴ درجه تحت نظارت دقیق سنسورها (که در راهکار ۳ توضیح داده می‌شود).</li>
+                    </ul>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x300/00BCD4/FFFFFF?text=Aisle+Containment+Panel+Installation" alt="Aisle Containment Implementation">
+
+                <div class="detail-section">
+                    <h3>۳. مدیریت فن‌ها و فشار هوا</h3>
+                    <p>
+                        پس از Containment، دیگر نیازی به فشار فن بالا برای غلبه بر ترکیب هوا نیست. سیستم هوشمند (یا کنترل دستی) می‌تواند سرعت فن‌های هواساز را کاهش دهد. **مصرف انرژی فن‌ها با مکعب سرعت آن‌ها متناسب است (قانون Affinity).** یعنی با کاهش ۲۰ درصدی سرعت فن، مصرف برق فن تا ۵۰ درصد کاهش می‌یابد. این یک صرفه‌جویی عظیم ثانویه است.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide4">
+            <div class="card">
+                <h2>♻️ راهکار ۱.۵: بهره‌گیری از گرمای تلف‌شده تجهیزات (Waste Heat Recovery)</h2>
+                
+                <div class="info-box" style="background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%); border-right-color: #ffc107;">
+                    <h3 style="color: #f57f17; margin-top: 0;">۱. گرما به عنوان منبع انرژی: ایده PUE منفی</h3>
+                    <p>
+                        پس از اجرای محصورسازی، ما یک جریان هوای گرم متمرکز (با دمای بالا) در اختیار داریم. این گرما ۱۰۰٪ انرژی است که تجهیزات IT مصرف کرده‌اند و دفع آن به محیط، اتلاف سرمایه است. سیستم بازیافت گرما، این انرژی را به منبعی قابل استفاده در خارج از دیتاسنتر تبدیل می‌کند. در مدل‌های پیشرفته، می‌توان ارزش اقتصادی این گرمای بازیافتی را به حدی رساند که PUE مرکز داده **به صورت مجازی به زیر ۱ (PUE منفی)** برسد.
+                    </p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>۲. فناوری و فرآیند بازیافت گرما</h4>
+                    <p>
+                        بازیافت گرما از طریق نصب **مبدل‌های حرارتی هوا به مایع** در مسیر جریان هوای گرم خروجی یا استفاده از سیستم‌های **Liquid Cooling** (که مایع مستقیماً گرمای پردازنده‌ها را جذب می‌کند) انجام می‌شود. مایع گرم (حاوی گرمای سرور) از طریق پمپ‌ها به بخش‌های دیگر منتقل می‌شود.
+                    </p>
+                    <ul>
+                        <li>**گرمای مناسب:** دمای هوای خروجی از دیتاسنتر بین ۳۵ تا ۴۵ درجه سانتی‌گراد، و دمای مایع خروجی از سرورها در Liquid Cooling تا ۶۰ درجه سانتی‌گراد است که برای پیش‌گرمایش بسیار مناسب است.</li>
+                        <li>**کاربرد کلیدی:** پیش‌گرم کردن آب برای بویلرهای ساختمان اداری یا گرمایش فضاهای دیگر.</li>
+                    </ul>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x300/FF9800/FFFFFF?text=Heat+Recovery+System+Diagram" alt="Heat Recovery Diagram">
+
+                <div class="case-study">
+                    <h3>۳. نمونه موفق: درآمدزایی از گرما</h3>
+                    <p>
+                        برنامه‌های موفق بازیافت گرما در اروپا (مانند دیتاسنترهای سوئد و فنلاند) نه تنها هزینه‌ها را کاهش داده‌اند، بلکه با فروش گرمای مازاد به شبکه گرمایش شهری، به **منبع درآمدزایی پایدار** تبدیل شده‌اند. این دیتاسنترها با تأمین گرمایش صدها واحد مسکونی، وابستگی خود به انرژی فسیلی را کاهش داده و تعهدات زیست‌محیطی سازمان را نیز تقویت کرده‌اند.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide5">
+            <div class="card">
+                <h2>📉 چالش ۲: کارکرد مداوم کمپرسورها در شرایط مناسب محیطی و اتلاف انرژی</h2>
+                
+                <div class="info-box" style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); border-right-color: #e91e63;">
+                    <h3 style="color: #880e4f; margin-top: 0;">۱. کمپرسور: پرمصرف‌ترین بخش سیستم سرمایش</h3>
+                    <p>
+                        کمپرسورها پرمصرف‌ترین جزء در هر سیستم سرمایشی هستند و تا **۷۰٪ از کل برق مصرفی هواساز** را به خود اختصاص می‌دهند. در دیتاسنترهای سنتی، این تجهیزات تقریباً در تمام طول سال فعال باقی می‌مانند، حتی زمانی که دمای محیط بیرون برای خنک‌سازی کاملاً مناسب و بهینه است.
+                    </p>
+                    <p>
+                        **عدم استفاده از سرمایش رایگان:** این کارکرد غیرضروری، به معنای هدر رفتن هزاران ساعت **سرمایش طبیعی رایگان (Free Cooling Hours)** است. در بسیاری از نقاط ایران، به ویژه در شب‌ها، فصول سرد و مناطق کوهستانی، دمای محیط پایین‌تر از دمای مورد نیاز دیتاسنتر است. نادیده گرفتن این فرصت، یک ناکارآمدی بزرگ در مدیریت انرژی است.
+                    </p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>۲. فرصت طلایی: تحلیل ساعات Free Cooling</h4>
+                    <p>
+                        سرمایش طبیعی از آب سرد یا هوای سرد محیط خارج برای کاهش بار کمپرسورها استفاده می‌کند. این سیستم با یک مبدل حرارتی (و نه سیکل تبرید)، گرمای دیتاسنتر را به محیط بیرون منتقل می‌کند. بر اساس تحلیل داده‌های هواشناسی، مراکز داده می‌توانند سالانه بین **۳۰۰۰ تا ۵۰۰۰ ساعت** (تقریباً نیمی از سال) از این روش استفاده کنند.
+                    </p>
+                    <ul>
+                        <li>**Free Cooling:** زمانی اتفاق می‌افتد که دمای محیط بیرون حدود ۱۰ درجه سانتی‌گراد از دمای آب برگشتی دیتاسنتر پایین‌تر باشد.</li>
+                        <li>**سرمایش رایگان:** در این حالت، کمپرسورها خاموش هستند و فقط پمپ‌ها و فن‌ها (با مصرف برق بسیار پایین) کار می‌کنند.</li>
+                    </ul>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x300/2196F3/FFFFFF?text=Annual+Temperature+Profile+vs+Free+Cooling+Window" alt="Desert Night Temperature Graph">
+
+                <div class="timeline-box">
+                    <h3>۳. توجیه مالی (تأثیر بر PUE)</h3>
+                    <p>
+                        فعال‌سازی Free Cooling به طور مستقیم PUE را بهبود می‌بخشد. در ساعاتی که Free Cooling فعال است، PUE می‌تواند به نزدیکی **۱.۱** کاهش یابد. در یک دیتاسنتر با بار ۱ مگاوات، اگر ۴۰۰۰ ساعت در سال از Free Cooling استفاده شود، صرفه‌جویی معادل **۴۰۰,۰۰۰ کیلووات ساعت** خواهد بود. این صرفه‌جویی، هزینه خرید و نصب تجهیزات را در مدت کوتاهی جبران می‌کند.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide6">
+            <div class="card">
+                <h2>📈 راهکار ۲: پیاده‌سازی و اتوماسیون سیستم سرمایش طبیعی (Free Cooling)</h2>
+                
+                <div class="info-box" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-right-color: #4caf50;">
+                    <h3 style="color: #2e7d32; margin-top: 0;">۱. اصول فنی Free Cooling: سوییچینگ اتوماتیک</h3>
+                    <p>
+                        پیاده‌سازی موفق Free Cooling نیازمند نصب چیلرها یا ماژول‌های مجهز به مبدل‌های حرارتی مناسب و یک سیستم کنترلی (BMS) است که بتواند بر اساس دمای محیط بیرون، به صورت خودکار بین حالت تبرید مکانیکی و حالت Free Cooling سوییچ کند. این سوییچینگ باید تدریجی و بدون ایجاد شوک دمایی در دیتاسنتر انجام شود.
+                    </p>
+                    <p>
+                        **عملکرد:** زمانی که سنسورها تشخیص می‌دهند دمای بیرون مناسب است، کنترلر، فرآیند را آغاز می‌کند: ابتدا فن‌ها و پمپ‌ها فعال می‌شوند، سپس یک شیر سه‌راهه (Three-way Valve) یا دمپر، مسیر آب یا هوا را به سمت مبدل حرارتی Free Cooling هدایت می‌کند و در نهایت، کمپرسورها خاموش می‌شوند. این فرآیند مصرف برق را به طور دراماتیک کاهش می‌دهد.
+                    </p>
+                </div>
+
+                <div class="timeline-box">
+                    <h4>۲. مراحل پیاده‌سازی و توجیه TCO (هزینه کل مالکیت)</h4>
+                    <p>
+                        توجیه اقتصادی Free Cooling بر اساس TCO است، نه فقط قیمت اولیه خرید.
+                    </p>
+                    <ul>
+                        <li>**فاز ۱: تحلیل داده‌های محیطی:** جمع‌آوری داده‌های یک ساله دمای محیط و محاسبه دقیق تعداد ساعات قابل استفاده.</li>
+                        <li>**فاز ۲: انتخاب سیستم:** نصب چیلرهای دارای Free Cooling یا ماژول‌های جداگانه آب-آب یا هوا-هوا.</li>
+                        <li>**فاز ۳: اتوماسیون BMS:** تنظیم منطق کنترلی در BMS. این منطق باید دمای حباب مرطوب (Wet Bulb Temperature) را نیز در نظر بگیرد، زیرا این دما تعیین‌کننده واقعی پتانسیل سرمایش تبخیری است.</li>
+                    </ul>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x300/008080/FFFFFF?text=Free+Cooling+Automation+Process" alt="Free Cooling Mechanism">
+
+                <div class="detail-section">
+                    <h3>۳. اهمیت کنترل هوشمند در Free Cooling</h3>
+                    <p>
+                        بزرگ‌ترین چالش، **مدیریت فصلی** و انتقال نرم و بدون وقفه بین دو حالت است. سیستم هوشمند باید بتواند دما و رطوبت را به طور پیوسته کنترل کند تا در زمان فعال شدن Free Cooling، خطر ورود رطوبت بالا یا هوای آلوده به دیتاسنتر وجود نداشته باشد (در مدل‌های Free Cooling با هوا). استفاده از فیلترهای با راندمان بالا و سنسورهای رطوبت برای جلوگیری از این ریسک‌ها ضروری است.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide7">
+            <div class="card">
+                <h2>💻 چالش ۳: پایش کورکورانه، فقدان داده و مدیریت واکنشی (Reactive Management)</h2>
+                
+                <div class="info-box" style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); border-right-color: #e91e63;">
+                    <h3 style="color: #880e4f; margin-top: 0;">۱. ریشه مشکل: عدم اندازه‌گیری در سطح گرانولار (Granular)</h3>
+                    <p>
+                        فقدان پایش جزئی (Granular) بزرگترین مانع برای بهینه‌سازی است. در اکثر دیتاسنترها، اندازه‌گیری برق فقط در سطح تابلوی اصلی انجام می‌شود و هیچ اطلاعاتی از مصرف برق تک تک هواسازها، پمپ‌ها، یا مصرف برق رک‌ها وجود ندارد. این کور بودن باعث می‌شود که تیم عملیات نتواند به سؤالات کلیدی پاسخ دهد: **PUE واقعی در این لحظه چقدر است؟** کدام هواساز بیشترین ناکارآمدی را دارد؟ کدام رک در معرض خطر Hot Spot است؟
+                    </p>
+                    <p>
+                        این نوع مدیریت، **مدیریت واکنشی (Reactive)** است؛ یعنی تا زمانی که یک آلارم به صدا در نیاید یا تجهیزات از کار نیفتند، اقدامی صورت نمی‌گیرد و هیچ تلاش پیشگیرانه‌ای صورت نمی‌گیرد.
+                    </p>
+                </div>
+
+                <div class="detail-section">
+                    <h4>۲. راهکار: سامانه پایش انرژی و زیرساخت (EMS/DCIM)</h4>
+                    <p>
+                        نصب یک پلتفرم DCIM (Data Center Infrastructure Management) یا EMS (Energy Management System) یک ضرورت است. این سیستم نیازمند نصب تجهیزات سخت‌افزاری و نرم‌افزار تحلیلی است:
+                    </p>
+                    <ul>
+                        <li>**پایش برق:** نصب پاورمترهای هوشمند در خروجی هر هواساز (برای اندازه‌گیری توان خالص سرمایش) و در ورودی هر رک (Rack PDU) برای محاسبه دقیق و لحظه‌ای **PUE در سطح رک**.</li>
+                        <li>**پایش محیطی:** استقرار ده‌ها سنسور دقیق دما و رطوبت در **ورودی و خروجی هر رک** برای ایجاد یک نقشه حرارتی دقیق و سه‌بعدی از دیتاسنتر.</li>
+                        <li>**داشبورد تحلیلی:** تجمیع تمام داده‌ها در یک نرم‌افزار مرکزی برای محاسبه لحظه‌ای PUE و هشدار در مورد ناکارآمدی‌ها.</li>
+                    </ul>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x300/FFC107/FFFFFF?text=PUE+Monitoring+Dashboard+Analytics" alt="Data Visualization Failure">
+
+                <div class="timeline-box">
+                    <h3>۳. شناسایی الگوهای تکراری و پیش‌بینی</h3>
+                    <p>
+                        مهمترین خروجی DCIM، امکان تحلیل الگوهای تکراری مصرف است. با بررسی داده‌های یک ماه، می‌توان تشخیص داد که بار IT در طول شبانه‌روز، هفته و ماه چه نوساناتی دارد. این دانش به تیم عملیات اجازه می‌دهد که تنظیمات هواسازها را به صورت **پیشگیرانه (Proactive)** تغییر دهد. مثلاً، اگر بار کاری هر روز ساعت ۸ صبح به پیک می‌رسد، می‌توان از ساعت ۷:۳۰ شروع به افزایش تدریجی سرعت فن‌ها کرد تا از شوک ناگهانی به سیستم و افزایش مصرف جلوگیری شود.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide8">
+            <div class="card">
+                <h2>🧠 راهکار ۳: سیستم کنترل هوشمند (AI-Based Control) و تنظیمات پیشگیرانه</h2>
+                
+                <div class="info-box" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-right-color: #2196f3;">
+                    <h3 style="color: #0d47a1; margin-top: 0;">۱. از داده به تصمیم: کنترل تطبیقی و بهینه</h3>
+                    <p>
+                        پس از پایش دقیق با DCIM، گام نهایی، استفاده از الگوریتم‌های هوش مصنوعی (AI/ML) برای تصمیم‌گیری‌های خودکار و بهینه‌سازی مداوم است. سیستم‌های هوشمند با تحلیل حجم عظیم داده‌های لحظه‌ای (از سنسورها، بار IT و دمای بیرون)، تنظیمات تهویه (Set Point دما، سرعت فن‌ها و جریان هوا) را به صورت **تطبیقی (Adaptive)** و **پیشگیرانه** تغییر می‌دهند.
+                    </p>
+                    <p>
+                        **مزیت کلیدی:** این سیستم‌ها می‌توانند **بهترین نقطه تعادل** بین مصرف انرژی پایین و حفظ دمای ایمن را پیدا کنند؛ کاری که برای اپراتورهای انسانی غیرممکن است.
+                    </p>
+                </div>
+
+                <div class="timeline-box">
+                    <h4>۲. فازبندی اجرای کنترل هوشمند: از قانون ساده تا ML</h4>
+                    <p>
+                        اجرای کنترل هوشمند می‌تواند طی دو فاز انجام شود تا از بازدهی سریع اطمینان حاصل شود:
+                    </p>
+                    <ul>
+                        <li>**فاز ۱ (Rule-Based Control):** اجرای قوانین منطقی ساده که بیشترین صرفه‌جویی اولیه را ایجاد می‌کنند: "اگر دمای تمام خروجی رک‌ها کمتر از ۲۴ درجه است، Set Point هواساز را تا ۲۳ درجه افزایش بده."</li>
+                        <li>**فاز ۲ (AI/ML Predictive Control):** الگوریتم‌های یادگیری ماشین، رابطه پیچیده بین متغیرها را مدل‌سازی می‌کنند و می‌توانند **بار IT آینده را پیش‌بینی** کنند. این امکان، تنظیمات را قبل از رسیدن پیک بار تغییر می‌دهد تا سیستم با حداقل توان بهینه کار کند.</li>
+                    </ul>
+                </div>
+                
+                <img class="content-image" src="https://via.placeholder.com/800x300/7B1FA2/FFFFFF?text=AI+Optimization+Predictive+Analytics" alt="AI Rule Based Control">
+
+                <div class="detail-section">
+                    <h3>۳. افزایش راندمان با تنظیمات پویا</h3>
+                    <p>
+                        سیستم هوشمند می‌تواند به طور مداوم و در بازه‌های چنددقیقه‌ای، Set Point دما را در محدوده ایمن (مثلاً بین ۲۲ تا ۲۴ درجه) جابجا کند تا در لحظه‌ای که بار کاری کم است، کمپرسورها را در حالت کم‌مصرف نگه دارد. این تنظیمات پویا، در طول یک سال، صرفه‌جویی عظیمی را به همراه دارد. بر اساس گزارش‌ها، هوش مصنوعی می‌تواند تا **۱۵٪ صرفه‌جویی اضافی** نسبت به بهترین حالت کنترل دستی ایجاد کند.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide9">
+            <div class="card">
+                <h2>✅ جمع‌بندی نهایی و نقشه راه پیشنهادی</h2>
+                <p style="font-size: 1.1em; margin-bottom: 25px;">
+                    چالش‌های اصلی دیتاسنتر ما در سه محور **مدیریت هوا، بهره‌وری سرمایش و هوشمندی عملیات** طبقه‌بندی شدند. راهکار‌های پیشنهادی، یک نقشه راه **عملیاتی و تدریجی** را ارائه می‌کنند که در نهایت به **کاهش حداقل ۲۰ درصدی PUE** منجر خواهد شد.
+                </p>
+
+                <div class="summary-point">
+                    <strong>۱. مهمترین نتیجه: تمرکز بر ریشه مشکلات</strong>
+                    <p>
+                        به جای صرف هزینه هنگفت برای خرید هواسازهای قوی‌تر، باید بر اصلاح ساختار فیزیکی (Containment) و کنترل هوشمند تمرکز کرد. محصورسازی راهروها (راهکار ۱) **پایه‌ای‌ترین و پربازده‌ترین** اقدام است که مسیر را برای سایر صرفه‌جویی‌ها باز می‌کند.
+                    </p>
+                </div>
+
+                <div class="summary-point">
+                    <strong>۲. نقشه راه سه‌فازی برای اجرا</strong>
+                    <p>
+                        اجرای طرح باید در سه فاز با اولویت‌بندی بازگشت سرمایه (ROI) سریع انجام شود:
+                        <br/>
+                        **فاز الف (شروع فوری):** محصورسازی و مسدودسازی نشت‌ها.
+                        <br/>
+                        **فاز ب (میان‌مدت):** پیاده‌سازی Free Cooling و نصب پاورمترهای DCIM برای پایش دقیق.
+                        <br/>
+                        **فاز ج (بلندمدت):** فعال‌سازی کنترل هوشمند (AI) و بهینه‌سازی تنظیمات بر اساس داده‌های تجمیع شده.
+                    </p>
+                </div>
+                
+                <div class="summary-point">
+                    <strong>۳. تأثیر مالی مستقیم</strong>
+                    <p>
+                        این طرح تنها یک بهبود فنی نیست، بلکه یک تصمیم مالی استراتژیک است. با کاهش بار کمپرسورها و افزایش Set Point دما، هزینه برق سرمایش به صورت مستقیم کاهش یافته و همچنین عمر مفید تجهیزات IT و HVAC افزایش می‌یابد که به طور کلی هزینه کل مالکیت (TCO) را به شدت کاهش می‌دهد.
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>درخواست نهایی</h3>
+                    <p>
+                        پیشنهاد می‌شود کمیته‌ای فنی-مالی برای ارزیابی دقیق‌تر و تخصیص بودجه‌ی اولیه برای اجرای **فاز الف (محصورسازی)** تشکیل شود. نتایج مثبت این فاز، توجیه قوی برای اجرای فازهای بعدی را به همراه خواهد داشت.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="slide" id="slide10">
+            <div id="contact-card">
+                <div style="font-size: 4em; margin-bottom: 10px; color: #7b1fa2;">📞</div>
+                <h3>اطلاعات تماس</h3>
+                
+                <div class="contact-detail">
+                    <p style="font-size: 1.5em; font-weight: bold; color: #333;">سینا مدرسی</p>
+                    <p style="font-size: 1em; color: #555; margin-top: 5px;">دکتری مهندسی نرم‌افزار</p>
+                    <p style="font-size: 0.9em; color: #555;">کارشناس دیتا و سویچ</p>
+                </div>
+
+                <div class="phone">
+                    ۰۹۱۸۰۱۰۸۲۸۴
+                </div>
+                
+                <p style="font-size: 0.85em; color: #aaa; margin-top: 30px;">
+                    آماده ارائه توضیحات بیشتر و همکاری در اجرای طرح
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="bottom-btn" onclick="openNav()">☰</button>
+        <button class="bottom-btn" onclick="changeSlide(currentSlide - 1)">« قبلی</button>
+        <div style="color: white; font-size: 0.9em;" id="slide-indicator">صفحه ۱ از ۱۱</div>
+        <button class="bottom-btn" onclick="changeSlide(currentSlide + 1)">بعدی »</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const slideIndicator = document.getElementById('slide-indicator');
+
+        function updateSlideIndicator() {
+            slideIndicator.textContent = `صفحه ${currentSlide + 1} از ${totalSlides}`;
+        }
+        
+        function changeSlide(index) {
+            if (index < 0 || index >= totalSlides) return;
+            
+            slides[currentSlide].classList.remove('active');
+            
+            currentSlide = index;
+            
+            slides[currentSlide].classList.add('active');
+            
+            updateSlideIndicator();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Sidebar Navigation Functions
+        function openNav() {
+            document.getElementById("mySidebar").classList.add('open');
+            document.getElementById("mySidebar").focus(); 
+        }
+
+        function closeNav() {
+            document.getElementById("mySidebar").classList.remove('open');
+        }
+
+        // Initialize
+        updateSlideIndicator();
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            // Check if sidebar is open
+            if (document.getElementById("mySidebar").classList.contains('open')) {
+                if (e.key === 'Escape') closeNav();
+                return;
+            }
+            // Navigate slides
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+                changeSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                changeSlide(currentSlide - 1);
+            }
+        });
+    </script>
+</body>
+</html>
